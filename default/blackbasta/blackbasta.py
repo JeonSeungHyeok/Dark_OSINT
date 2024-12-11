@@ -30,7 +30,7 @@ class osint_blackbasta(osint_tor_render_js):
                 try:
                     tmp = p["data-v-md-line"]
                     if tmp=="3":
-                        key = f"Description( {key} )"
+                        key = f"Description"
                         value = p.text
                     else:
                         for strong_tag in strong_tags:
@@ -40,13 +40,13 @@ class osint_blackbasta(osint_tor_render_js):
                     pass
                 img = p.find_all('img')
                 img_links = [self.url+x.get('src') for x in img]
+                if "all data size" in key:
+                    key = "all data"
                 result.update({key:value})
                 result.update({"images":img_links})
                 result.pop("N/A",None)
             result.update({"title":title})
             result.update({"link":link})
-            if "tel" not in result:
-                result.update({"tel":"N/A"})
             self.result.update({result["title"]:result})
 
     def next_page(self):
