@@ -1,5 +1,5 @@
 from default.basic_tor import *
-from blackbasta.bianlian import *
+from bianlian.bianlian import *
 from collections import OrderedDict
 import json
 import os
