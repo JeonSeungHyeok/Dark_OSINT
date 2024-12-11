@@ -1,13 +1,11 @@
-import sys, os
-sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 from default.basic_tor import osint_tor_render_js
 from bs4 import BeautifulSoup
-import json
 import time
 
 class osint_blackbasta(osint_tor_render_js):
     def __init__(self, url):
         super().__init__(url)
+        self.progress=True
 
     def using_bs4(self):
         html = self.response.text
@@ -18,6 +16,9 @@ class osint_blackbasta(osint_tor_render_js):
             title = title_link.find('a',class_="blog_name_link").string
             link = title_link.find('a',class_="blog_name_link").get("href")
             data_v_md_lines = card.find_all('p',attrs={"data-v-md-line":True})
+            self.progress=card.find("div",class_="progress-title")
+            if self.progress==None:
+                break
             result = {}
             for p in data_v_md_lines:
                 key = "N/A"
@@ -39,7 +40,7 @@ class osint_blackbasta(osint_tor_render_js):
             self.result.update({result["title"]:result})
 
     def next_page(self):
-        while True:
+        while self.progress!=None:
             time.sleep(1)
             super().tor_playwright_crawl()
             self.using_bs4()
@@ -52,8 +53,6 @@ class osint_blackbasta(osint_tor_render_js):
             except Exception as e:
                 print(f"Error while navigating pages: {e}")
                 break
-        with open("result.json", "w") as json_file:
-            json.dump(self.result, json_file, indent=4)
 
     def remove_char(self,key):
         if '#' in key:
@@ -66,18 +65,9 @@ class osint_blackbasta(osint_tor_render_js):
             return key.lower()
         else:
             return key
-        
 
     def process(self):
         super().init_browser()
         self.next_page()
         super().close_browser()
-        
-
-def main():
-    url = "http://stniiomyjliimcgkvdszvgen3eaaoz55hreqqx6o77yvmpwt7gklffqd.onion/"
-    blackbasta = osint_blackbasta(url)
-    blackbasta.process()
-
-if __name__=="__main__":
-    main()
+        return self.result
