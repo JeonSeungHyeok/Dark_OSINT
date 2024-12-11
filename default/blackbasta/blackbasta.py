@@ -27,9 +27,17 @@ class osint_blackbasta(osint_tor_render_js):
                 if strong:
                     key = self.remove_char(strong.text)
                 strong_tags = p.find_all('strong')
-                for strong_tag in strong_tags:
-                    strong_tag.decompose()  
-                value = p.text.replace('\n','')
+                try:
+                    tmp = p["data-v-md-line"]
+                    if tmp=="3":
+                        key = f"Description( {key} )"
+                        value = p.text
+                    else:
+                        for strong_tag in strong_tags:
+                            strong_tag.decompose()  
+                        value = p.text.replace('\n','')
+                except Exception as e:
+                    pass
                 img = p.find_all('img')
                 img_links = [self.url+x.get('src') for x in img]
                 result.update({key:value})
@@ -37,6 +45,8 @@ class osint_blackbasta(osint_tor_render_js):
                 result.pop("N/A",None)
             result.update({"title":title})
             result.update({"link":link})
+            if "tel" not in result:
+                result.update({"tel":"N/A"})
             self.result.update({result["title"]:result})
 
     def next_page(self):
