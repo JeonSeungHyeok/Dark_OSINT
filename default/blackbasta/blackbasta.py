@@ -102,4 +102,5 @@ class osint_blackbasta(osint_tor_render_js):
         self.next_page()
         self.get_region_country()
         super().close_browser()
+        print(self.result)
         return self.result

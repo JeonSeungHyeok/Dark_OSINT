@@ -96,7 +96,7 @@ class osint_tor_default:
         self.parse_domain()
         self.check_dns_nameserver()
         self.request_default_url() 
-        self.using_bs4()
+        #self.using_bs4()
         
 class osint_tor_render_js:
     def __init__(self,url):
