@@ -1,6 +1,10 @@
 from default.basic_tor import osint_tor_render_js
 from bs4 import BeautifulSoup
+from tldextract import extract
+from dns_resolver import resolve_ipv4
+import requests
 import time
+import re
 
 class osint_blackbasta(osint_tor_render_js):
     def __init__(self, url):
@@ -41,6 +45,13 @@ class osint_blackbasta(osint_tor_render_js):
                 img = p.find_all('img')
                 img_links = [self.url+x.get('src') for x in img]
                 if "all data size" in key:
+                    pattern = r"all data size\s*(.*)" 
+                    match = re.search(pattern, key) 
+                    if match: 
+                        remaining_string = match.group(1)
+                        value = f"size({remaining_string})" + value
+                    else:
+                        value = "size(N/A)" + value
                     key = "all data"
                 result.update({key:value})
                 result.update({"images":img_links})
@@ -75,9 +86,20 @@ class osint_blackbasta(osint_tor_render_js):
             return key.lower()
         else:
             return key
+    
+    def get_region_country(self):
+        try:
+            for key, values in self.result.items():
+                ip = resolve_ipv4(key)
+                response = requests.get(f"http://ip-api.com/json/{ip[0]}").json()
+                values.update({"country":response["country"]})
+                values.update({"region":f"{response['city']}, {response['regionName']}, {response['country']}"})
+        except Exception as e:
+            print(f"Error at parse_domain : {e}")
 
     def process(self):
         super().init_browser()
         self.next_page()
+        self.get_region_country()
         super().close_browser()
         return self.result

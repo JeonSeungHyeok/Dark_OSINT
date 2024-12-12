@@ -131,6 +131,15 @@ class osint_tor_render_js:
         except Exception as e:
             print(f"Error: {e}")
 
+    def parse_domain(self):
+        try:
+            extracted = extract(self.url)
+            return extracted.domain+"."+extracted.suffix
+        except Exception as e:
+            print(f"Error at parse_domain : {e}")
+            exit(1)
+        return None
+
     def process(self):
         self.tor_playwright_crawl()
 

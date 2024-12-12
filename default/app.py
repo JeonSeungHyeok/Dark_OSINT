@@ -5,7 +5,7 @@ import json
 import os
 
 def reorder_dict(data):
-    desired_order = ["title", "Description", "site", "address", "all data", "tel", "link", "images"]
+    desired_order = ["title", "Description", "site", "address", "country", "region", "all data", "tel", "link", "images"]
     reordered = {}
     for key, value in data.items():
         if isinstance(value, dict):
@@ -32,4 +32,5 @@ def process():
     }
 
     for key,value in classes.items():
-        make_output_file(key,value(urls[key]).process())
+        osint_class = value(urls[key])
+        make_output_file(key,osint_class.process())
