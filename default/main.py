@@ -1,7 +1,9 @@
 from app import *
+from telegram.telegram import *
 
 def main():
-    process()
+    result = process()
+    send_message(result)
 
 if __name__=="__main__":
     main()
