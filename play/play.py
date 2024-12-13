@@ -15,7 +15,6 @@ class osint_play(osint_tor_render_js):
         bsobj = BeautifulSoup(html, 'html.parser')
         object_table = bsobj.find_all("tr")
 
-
         for tr in object_table:
             # 제목
             title_element = tr.find('th', class_='News')
@@ -29,12 +28,16 @@ class osint_play(osint_tor_render_js):
             site_element = tr.find('i', class_='link')
             site = site_element.next_sibling.strip() if site_element else 'none'
 
-            # topic.php?id=<post_id> 추출
-            post_id_element = tr.find('a', href=True)
+            # topic ip
+            post_id_element = tr.find('th', attrs={'onclick': True})  # onclick 속성이 있는 <th> 태그 찾기
             if post_id_element:
-                post_id = post_id_element['href'].split('=')[-1]
-                href = f'{self.base_url}/topic.php?id={post_id}'
+                onclick_value = post_id_element['onclick']  # onclick 속성 값 가져오기
+                # "viewtopic('<post_id>')"에서 <post_id> 추출
+                post_id = onclick_value.split("'")[1]  # 작은 따옴표로 분리하여 post_id 추출
+                href = f'{self.base_url}/topic.php?id={post_id}'  # 완전한 URL 생성
                 full_url = href
+                print(onclick_value)
+                print(full_url)  # 생성된 URL 출력
 
                 # comment, description 가져오기
                 comment, description = self.details(full_url)
@@ -49,14 +52,14 @@ class osint_play(osint_tor_render_js):
                 }
             self.result[title] = result
 
-    def details(self):
+    def details(self, url):
         self.make_tor_session()
-        response = self.scraper.get(self.url)
+        response = self.scraper.get(url)
         new_html = response.text
         new_soup = BeautifulSoup(new_html, 'html.parser')
 
         comment, description = None, None
-        update_element = new_soup.find_all('th', class_='News')
+        # update_element = new_soup.find_all('th', class_='News')
 
         # 설명
         description_element = new_soup.find('div', string=lambda text: text and 'information:' in text.lower())
@@ -72,28 +75,24 @@ class osint_play(osint_tor_render_js):
         return comment, description
 
     def next_page(self):
-        while self.progress: 
-            time.sleep(1)  
-            super().tor_playwright_crawl() 
-            self.using_bs4()  
-            for page in range(1,4):
-                self.url = self.base_url + f'/index.php?page={page}'  # URL 업데이트
-                print(self.url)  # 업데이트된 URL 출력
+        for page in range(1, 4):  # 페이지 1~3까지만 크롤링
+            self.url = self.base_url + f'/index.php?page={page}'  # URL 업데이트
+            print(self.url)  # 업데이트된 URL 출력
+            time.sleep(1)  # 1초 대기
+            super().tor_playwright_crawl()  # Tor 브라우저로 크롤링
+            self.using_bs4()  # BeautifulSoup으로 데이터 처리
 
     def remove_char(self, key):
-        if '#' in key:
-            key = key.replace('#', '').lower()
-        if ':' in key:
-            key = key.replace(':', '').lower()
-        if '.' in key:
-            key = key.replace('.', '').lower()
-        if key:
-            return key.lower()
-        else:
-            return key
+        for char in ['#', ':', '.']:
+            key = key.replace(char, '').lower()
+        return key.lower()
 
     def process(self):
         super().init_browser()
-        self.next_page()
-        super().close_browser()
+        try:
+            self.next_page()
+        finally:
+            self.progress = False  # 종료 조건 설정
+            super().close_browser()
         return self.result
+
