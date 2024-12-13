@@ -5,11 +5,14 @@ import json
 import os
 
 def reorder_dict(data):
-    desired_order = ["title", "Description", "site", "address", "all data", "tel", "link", "images"]
+    # 기존 필드에 추가된 필드를 포함한 순서 정의
+    desired_order = [
+        "title", "Description", "link"
+    ]
     reordered = {}
     for key, value in data.items():
         if isinstance(value, dict):
-            reordered[key] = {k: value.get(k,"N/A") for k in desired_order}
+            reordered[key] = {k: value.get(k, "N/A") for k in desired_order}
         else:
             reordered[key] = value
     return reordered

@@ -12,7 +12,6 @@ class osint_bianlian(osint_tor_render_js):
         html = self.response.text
         bsobj = BeautifulSoup(html, 'html.parser')
         object_table = bsobj.find_all("section", class_="list-item")
-        #print(f"Found list items: {len(object_table)}")  # 섹션 개수 확인
 
         for section in object_table:
             # 제목
@@ -27,6 +26,11 @@ class osint_bianlian(osint_tor_render_js):
             description_tag = section.find("div", class_="description")
             description = description_tag.text.strip() if description_tag else "No Description"
 
+            # 회사 데이터 상세 내용
+            company_details_tag = section.find("div", class_="company-details")
+            company_details = company_details_tag.text.strip() if company_details_tag else "No Company Details"
+
+            # 결과 저장
             result = {
                 "title": title,
                 "link": link,
