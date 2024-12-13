@@ -38,13 +38,13 @@ def make_output_file(name,result):
 def process():
     urls = {
         #"blackbasta":"http://stniiomyjliimcgkvdszvgen3eaaoz55hreqqx6o77yvmpwt7gklffqd.onion/",
-        "cactus":"https://cactusbloguuodvqjmnzlwetjlpj6aggc6iocwhuupb47laukux7ckid.onion/",
-        #"play": "http://mbrlkbtq5jonaqkurjwmxftytyn2ethqvbxfu4rgjbkkknndqwae6byd.onion/",
+        #"cactus":"https://cactusbloguuodvqjmnzlwetjlpj6aggc6iocwhuupb47laukux7ckid.onion/",
+        "play": "http://mbrlkbtq5jonaqkurjwmxftytyn2ethqvbxfu4rgjbkkknndqwae6byd.onion/",
     }
     classes = {
         #"blackbasta":osint_blackbasta,
-        "cactus":osint_cactus,
-        #"play":osint_play,
+        #"cactus":osint_cactus,
+        "play":osint_play,
     }
 
     for key,value in classes.items():
