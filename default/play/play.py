@@ -26,9 +26,6 @@ class osint_play(osint_tor_render_js):
             print(f"Error: {e}")
 
     def using_bs4(self):
-        print(self.response)
-        print()
-        print()
         html = self.response.text
         bsobj = BeautifulSoup(html, 'html.parser')
         object_table = bsobj.find_all("th", class_='News')
@@ -70,9 +67,7 @@ class osint_play(osint_tor_render_js):
         self.tor_playwright_crawl()
         new_html = self.response.text
         new_soup = BeautifulSoup(new_html, 'html.parser')
-        print(self.url)
-        print(new_html)
-        input()
+
         description = None
         for elem in new_soup.find_all(string=re.compile(r'information\s*:?', re.IGNORECASE)):
             if 'information' in elem.lower():
@@ -88,7 +83,6 @@ class osint_play(osint_tor_render_js):
 
         # 링크
         #title_link = new_soup.find('a')['href'] if new_soup.find('a') else 'none'
-        print(comment,description)
         return comment, description
 
     def next_page(self):
