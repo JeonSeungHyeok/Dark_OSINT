@@ -13,12 +13,11 @@ class osint_play(osint_tor_render_js):
     def using_bs4(self):
         html = self.response.text
         bsobj = BeautifulSoup(html, 'html.parser')
-        object_table = bsobj.find_all("tr")
+        object_table = bsobj.find_all("th", class_='News')
 
         for tr in object_table:
             # 제목
-            title_element = tr.find('th', class_='News')
-            title = title_element.contents[0].strip() if title_element else 'none'
+            title = tr.contents[0].strip() if tr.contents[0] else 'none'
 
             # 위치
             location_element = tr.find('i', class_='location')
@@ -29,28 +28,29 @@ class osint_play(osint_tor_render_js):
             site = site_element.next_sibling.strip() if site_element else 'none'
 
             # topic ip
-            post_id_element = tr.find('th', attrs={'onclick': True})  # onclick 속성이 있는 <th> 태그 찾기
-            if post_id_element:
-                onclick_value = post_id_element['onclick']  # onclick 속성 값 가져오기
+            onclick_value = tr['onclick'] if 'onclick' in tr.attrs else 'none'  # onclick 속성이 있는 <th> 태그 찾기
+  
+            if onclick_value:
                 # "viewtopic('<post_id>')"에서 <post_id> 추출
                 post_id = onclick_value.split("'")[1]  # 작은 따옴표로 분리하여 post_id 추출
-                href = f'{self.base_url}/topic.php?id={post_id}'  # 완전한 URL 생성
-                full_url = href
-                print(onclick_value)
-                print(full_url)  # 생성된 URL 출력
+                href = f'/topic.php?id={post_id}'  # 완전한 URL 생성
+                full_url = self.base_url + href
+                print('onclick_value:', onclick_value)
+                print()
+                print('full_url:', full_url)  # 생성된 URL 출력
 
-                # comment, description 가져오기
-                comment, description = self.details(full_url)
-
+            #description, comment = self.details(full_url)
+            
             result = {
-                "title": title,
-                "address": location,
-                "site": site,
-                #"link": title_link,
-                "Description": description,
-                "all data": comment,
-                }
-            self.result[title] = result
+                        "title": title,
+                        "address": location,
+                        "site": site,
+                        #"Description": description,
+                        #"all data": comment
+            }
+            print()
+            print(result)
+            self.result[title]=result
 
     def details(self, url):
         self.make_tor_session()
@@ -75,7 +75,7 @@ class osint_play(osint_tor_render_js):
         return comment, description
 
     def next_page(self):
-        for page in range(1, 4):  # 페이지 1~3까지만 크롤링
+        for page in range(1):  # 페이지 1~2까지만 크롤링
             self.url = self.base_url + f'/index.php?page={page}'  # URL 업데이트
             print(self.url)  # 업데이트된 URL 출력
             time.sleep(1)  # 1초 대기
