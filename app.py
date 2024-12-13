@@ -7,7 +7,7 @@ import json
 import os
 
 def reorder_dict(data):
-    desired_order = ["title", "Description", "site", "address", "country", "region", "all data", "tel", "link", "images"]
+    desired_order = ["title", "Description", "site", "address", "country", "region", "all data", "tel", "link", "images", "times"]
     reordered = {}
     for key, value in data.items():
         if isinstance(value, dict):

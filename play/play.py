@@ -52,6 +52,10 @@ class osint_play(osint_tor_render_js):
                 full_url = self.base_url + href # 링크 추출
                 self.url = full_url
                 comment, description = self.details()
+
+            # time
+            time_element = tr.find('h')
+            time = time_element.text.strip() if time_element else 'none'
             
             result = {
                         "title": title,
@@ -59,10 +63,11 @@ class osint_play(osint_tor_render_js):
                         "site": site,
                         "Description": description,
                         "all data": comment,
-                        "link": full_url
+                        "link": full_url,
+                        "times": time
             }
-
             self.result[title]=result
+            print(time)
 
     def details(self):
         self.tor_playwright_crawl()
