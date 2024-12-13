@@ -2,12 +2,14 @@ from default.basic_tor import osint_tor_render_js
 from bs4 import BeautifulSoup
 import time
 import re
+import requests
 
 class osint_play(osint_tor_render_js):
     def __init__(self, url):
         super().__init__(url)
         self.base_url = url.rstrip("/")  # URL 마지막 슬래시 제거
         self.progress = True
+        self.scraper = requests.Session()
         self.result = {}
 
     def using_bs4(self):
@@ -34,44 +36,42 @@ class osint_play(osint_tor_render_js):
                 # "viewtopic('<post_id>')"에서 <post_id> 추출
                 post_id = onclick_value.split("'")[1]  # 작은 따옴표로 분리하여 post_id 추출
                 href = f'/topic.php?id={post_id}'  # 완전한 URL 생성
-                full_url = self.base_url + href
+                full_url = self.base_url + href # 링크 추출
                 print('onclick_value:', onclick_value)
                 print()
                 print('full_url:', full_url)  # 생성된 URL 출력
 
-            #description, comment = self.details(full_url)
+            description, comment = self.details(full_url)
             
             result = {
                         "title": title,
                         "address": location,
                         "site": site,
-                        #"Description": description,
-                        #"all data": comment,
+                        "Description": description,
+                        "all data": comment,
                         "link": full_url
             }
             print()
             print(result)
             self.result[title]=result
 
-    def details(self, url):
-        self.make_tor_session()
-        response = self.scraper.get(url)
-        new_html = response.text
+    def details(self, full_url):
+        self.tor_playwright_crawl()
+        new_html = self.response.text
         new_soup = BeautifulSoup(new_html, 'html.parser')
 
         comment, description = None, None
         # update_element = new_soup.find_all('th', class_='News')
 
-        # 설명
-        description_element = new_soup.find('div', string=lambda text: text and 'information:' in text.lower())
-        description = description_element.text.strip() if description_element else 'none'
+        # 정보(information) 추출
+        information_element = new_soup.find('div', string=lambda t: t and 'information:' in t.lower())
+        if information_element:
+            description = information_element.text.strip().replace('information:', '').strip()
 
-        # 유출 데이터
-        comment_element = new_soup.find('div', string=lambda text: text and 'comment:' in text.lower())
-        comment = comment_element.text.strip() if comment_element else 'none'
-
-        # 링크
-        #title_link = new_soup.find('a')['href'] if new_soup.find('a') else 'none'
+        # 댓글(comment) 추출
+        comment_element = new_soup.find('div', string=lambda t: t and 'comment:' in t.lower())
+        if comment_element:
+            comment = comment_element.text.strip().replace('comment:', '').strip()
 
         return comment, description
 
