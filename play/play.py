@@ -46,7 +46,8 @@ class osint_play(osint_tor_render_js):
                         "address": location,
                         "site": site,
                         #"Description": description,
-                        #"all data": comment
+                        #"all data": comment,
+                        "link": full_url
             }
             print()
             print(result)
