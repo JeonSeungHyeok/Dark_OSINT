@@ -18,14 +18,18 @@ class osint_rhysida(osint_tor_render_js):
             link = mass.find('a',class_="").get("href")
             description = mass.find(lambda tag: tag.name == 'div' and tag.has_attr('class') and tag['class'] == ['m-2']).string
             images = item.find_all('img', alt="image")
-
+            timer = item.find('div', class_='timer').string
+            price = item.find('div',class_="text-center h2").string.strip().replace('Price: ', '')
+            
             result = {}
             result.update({"title":title})
             result.update({"Description":description})
             result.update({"site":link})
             for image in images:
                 img = self.url + image.get('src')
-                result.update({"image":img})
+                result.update({"images":img})
+            result.update({"timer":timer})
+            result.update({"price":price})
             self.result.update({result["title"]:result})
 
     def process(self):
