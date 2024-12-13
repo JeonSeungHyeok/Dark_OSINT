@@ -1,12 +1,23 @@
 from default.basic_tor import *
 from blackbasta.blackbasta import *
 from cactus.cactus import *
+from play.play import *
 from collections import OrderedDict
 import json
 import os
 
 def reorder_dict(data):
-    desired_order = ["title", "Description", "site", "address", "country", "region", "all data", "tel", "link", "images"]
+    desired_order = ["title",       # 
+                     "Description", #
+                     "site",        #
+                     "address",     #
+                     "country",     #
+                     "region",      #
+                     "all data",    # 
+                     "tel",         #
+                     "link",        #
+                     "images",      #
+                     ]
     reordered = {}
     for key, value in data.items():
         if isinstance(value, dict):
@@ -16,8 +27,6 @@ def reorder_dict(data):
     return reordered
 
 def make_output_file(name,result):
-    print(result)
-    input('-')
     current_path = os.getcwd()
     try:
          os.mkdir("OUT")
@@ -28,12 +37,14 @@ def make_output_file(name,result):
 
 def process():
     urls = {
-        "blackbasta":"http://stniiomyjliimcgkvdszvgen3eaaoz55hreqqx6o77yvmpwt7gklffqd.onion/",
+        #"blackbasta":"http://stniiomyjliimcgkvdszvgen3eaaoz55hreqqx6o77yvmpwt7gklffqd.onion/",
         "cactus":"https://cactusbloguuodvqjmnzlwetjlpj6aggc6iocwhuupb47laukux7ckid.onion/",
+        #"play": "http://mbrlkbtq5jonaqkurjwmxftytyn2ethqvbxfu4rgjbkkknndqwae6byd.onion/",
     }
     classes = {
-        "blackbasta":osint_blackbasta,
+        #"blackbasta":osint_blackbasta,
         "cactus":osint_cactus,
+        #"play":osint_play,
     }
 
     for key,value in classes.items():
