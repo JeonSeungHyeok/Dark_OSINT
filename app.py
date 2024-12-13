@@ -1,5 +1,6 @@
 from default.basic_tor import *
 from blackbasta.blackbasta import *
+from bianlian.bialian import *
 from play.play import *
 from collections import OrderedDict
 import json
@@ -27,10 +28,12 @@ def make_output_file(name,result):
 def process():
     urls = {
         #"blackbasta":"http://stniiomyjliimcgkvdszvgen3eaaoz55hreqqx6o77yvmpwt7gklffqd.onion/",
+        #"bianlian": "http://bianlianlbc5an4kgnay3opdemgcryg2kpfcbgczopmm3dnbz3uaunad.onion/"
         "play": "http://mbrlkbtq5jonaqkurjwmxftytyn2ethqvbxfu4rgjbkkknndqwae6byd.onion/"
     }
     classes = {
         #"blackbasta":osint_blackbasta,
+        #"bianlian":osint_bianlian,
         "play":osint_play,
 
     }
