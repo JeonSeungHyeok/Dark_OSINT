@@ -108,7 +108,7 @@ class osint_tor_render_js:
 
     def init_browser(self):
         self.browser = sync_playwright().start().firefox.launch(
-            headless=False,
+            headless=True, # False > 브라우저 확인 가능 
             proxy={"server": "socks5://127.0.0.1:9050"}
         )
         self.page = self.browser.new_page()

@@ -2,15 +2,28 @@ from default.basic_tor import osint_tor_render_js
 from bs4 import BeautifulSoup
 import time
 import re
-import requests
+from requests import *
 
 class osint_play(osint_tor_render_js):
     def __init__(self, url):
         super().__init__(url)
         self.base_url = url.rstrip("/")  # URL 마지막 슬래시 제거
         self.progress = True
-        self.scraper = requests.Session()
         self.result = {}
+    
+    def tor_playwright_crawl(self):
+        try:
+            self.page.goto(self.url, timeout=60000) 
+            self.page.wait_for_timeout(5000)
+            html = self.page.content()
+            response = Response()
+            response._content = html.encode('utf-8') 
+            response.status_code = 200 
+            response.url = self.url 
+            response.headers = {"Content-Type": "text/html; charset=utf-8"} 
+            self.response = response
+        except Exception as e:
+            print(f"Error: {e}")
 
     def using_bs4(self):
         html = self.response.text
@@ -37,11 +50,8 @@ class osint_play(osint_tor_render_js):
                 post_id = onclick_value.split("'")[1]  # 작은 따옴표로 분리하여 post_id 추출
                 href = f'/topic.php?id={post_id}'  # 완전한 URL 생성
                 full_url = self.base_url + href # 링크 추출
-                print('onclick_value:', onclick_value)
-                print()
-                print('full_url:', full_url)  # 생성된 URL 출력
-
-            description, comment = self.details(full_url)
+                self.url = full_url
+                comment, description = self.details()
             
             result = {
                         "title": title,
@@ -51,27 +61,28 @@ class osint_play(osint_tor_render_js):
                         "all data": comment,
                         "link": full_url
             }
-            print()
-            print(result)
+
             self.result[title]=result
 
-    def details(self, full_url):
+    def details(self):
         self.tor_playwright_crawl()
         new_html = self.response.text
         new_soup = BeautifulSoup(new_html, 'html.parser')
 
         comment, description = None, None
-        # update_element = new_soup.find_all('th', class_='News')
 
-        # 정보(information) 추출
-        information_element = new_soup.find('div', string=lambda t: t and 'information:' in t.lower())
-        if information_element:
-            description = information_element.text.strip().replace('information:', '').strip()
+        description = None
+        for elem in new_soup.find_all(string=re.compile(r'information\s*:?', re.IGNORECASE)):
+            if 'information' in elem.lower():
+                description = elem.split('information:')[-1].strip()
+                break
 
-        # 댓글(comment) 추출
-        comment_element = new_soup.find('div', string=lambda t: t and 'comment:' in t.lower())
-        if comment_element:
-            comment = comment_element.text.strip().replace('comment:', '').strip()
+        # comment 추출 (comment: 뒤의 내용)
+        comment = None
+        for elem in new_soup.find_all(string=re.compile(r'comment\s*:?', re.IGNORECASE)):
+            if 'comment' in elem.lower():
+                comment = elem.split('comment:')[-1].strip()
+                break
 
         return comment, description
 
@@ -94,6 +105,6 @@ class osint_play(osint_tor_render_js):
             self.next_page()
         finally:
             self.progress = False  # 종료 조건 설정
-            super().close_browser()
+            # super().close_browser()
         return self.result
 
