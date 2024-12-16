@@ -63,7 +63,7 @@ class osint_blackbasta(osint_tor_render_js):
     def next_page(self):
         while self.progress!=None:
             time.sleep(1)
-            super().tor_playwright_crawl()
+            self.tor_playwright_crawl()
             self.using_bs4()
             try:
                 next_button = self.page.locator("div.next-page-btn")
@@ -98,8 +98,7 @@ class osint_blackbasta(osint_tor_render_js):
             print(f"Error at parse_domain : {e}")
 
     def process(self):
-        super().init_browser()
+        self.go_page()
         self.next_page()
         self.get_region_country()
-        super().close_browser()
-        return self.result
+        return self.result, self.browser, self.page
