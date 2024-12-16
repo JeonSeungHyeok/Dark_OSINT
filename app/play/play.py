@@ -93,7 +93,6 @@ class osint_play(osint_tor_render_js):
     def next_page(self):
         for page in range(1):  # 페이지 1~2까지만 크롤링
             self.url = self.base_url + f'/index.php?page={page}'  # URL 업데이트
-            print(self.url)  # 업데이트된 URL 출력
             time.sleep(1)  # 1초 대기
             self.tor_playwright_crawl()  # Tor 브라우저로 크롤링
             self.using_bs4()  # BeautifulSoup으로 데이터 처리
