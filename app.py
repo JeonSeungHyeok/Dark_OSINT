@@ -2,6 +2,7 @@ from default.basic_tor import *
 from blackbasta.blackbasta import *
 from bianlian.bialian import *
 from play.play import *
+from raworld.ra_world import *
 from collections import OrderedDict
 import json
 import os
@@ -29,13 +30,14 @@ def process():
     urls = {
         #"blackbasta":"http://stniiomyjliimcgkvdszvgen3eaaoz55hreqqx6o77yvmpwt7gklffqd.onion/",
         #"bianlian": "http://bianlianlbc5an4kgnay3opdemgcryg2kpfcbgczopmm3dnbz3uaunad.onion/"
-        "play": "http://mbrlkbtq5jonaqkurjwmxftytyn2ethqvbxfu4rgjbkkknndqwae6byd.onion/"
+        #"play": "http://mbrlkbtq5jonaqkurjwmxftytyn2ethqvbxfu4rgjbkkknndqwae6byd.onion/",
+        "raworld" : "http://raworldw32b2qxevn3gp63pvibgixr4v75z62etlptg3u3pmajwra4ad.onion/"
     }
     classes = {
         #"blackbasta":osint_blackbasta,
         #"bianlian":osint_bianlian,
-        "play":osint_play,
-
+        #"play":osint_play,
+        "raworld": osint_rawolrd
     }
 
     for key,value in classes.items():

@@ -67,7 +67,6 @@ class osint_play(osint_tor_render_js):
                         "times": time
             }
             self.result[title]=result
-            print(time)
 
     def details(self):
         self.tor_playwright_crawl()
