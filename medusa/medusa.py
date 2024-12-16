@@ -1,10 +1,12 @@
 from playwright.sync_api import sync_playwright
 from bs4 import BeautifulSoup
+from default.basic_tor import osint_tor_render_js
+from captcha import CaptchaHandler
 
-class osint_medusa:
+class osint_medusa(osint_tor_render_js):
     def __init__(self, url):
-        self.url = url
-        self.result = {}
+        super().__init__(url)
+        self.progress = True
 
     def using_bs4(self, html):
         bsobj = BeautifulSoup(html, 'html.parser')
@@ -20,11 +22,11 @@ class osint_medusa:
                 if countdown:
                     time_elements = countdown.find_all("span")
                     time_units = ["D", "H", "M", "S"]
-                    time_remaining = " ".join(f"{elem.get_text(strip=True)}{unit}" for elem, unit in zip(time_elements, time_units))
+                    timer = " ".join(f"{elem.get_text(strip=True)}{unit}" for elem, unit in zip(time_elements, time_units))
                 else:
-                    time_remaining = "No Time"
+                    timer = "No Time"
                 updated_tag = company.find("div", class_="date-updated")
-                updated_date = updated_tag.find("span", class_="text-muted").get_text(strip=True) if updated_tag else "No Update Date"
+                update_date = updated_tag.find("span", class_="text-muted").get_text(strip=True) if updated_tag else "No Update Date"
                 views_tag = company.find("div", class_="number-view")
                 views = views_tag.find("span", class_="text-muted").get_text(strip=True) if views_tag else "No Views"
                 
@@ -32,45 +34,20 @@ class osint_medusa:
                     "title": title,
                     "description": description,
                     "price": price,
-                    "time_remaining": time_remaining,
-                    "updated_date": updated_date,
+                    "timer": timer,
+                    "update_date": update_date,
                     "views": views
                 }
                 self.result[title] = result
             except Exception as e:
                 print(f"Error extracting data: {e}")
-
-    def handle_captcha(self, page):
-        try:
-            print("CAPTCHA를 해결한 후, 엔터 키를 누르세요...")
-            input()  
-            print("CAPTCHA 해결 완료!")
-        except Exception as e:
-            print(f"Error handling CAPTCHA: {e}")
-
+    
     def crawl(self):
-        with sync_playwright() as p:
-            browser = p.firefox.launch(headless=False, proxy={"server": "socks5://127.0.0.1:9050"})
-            page = browser.new_page()
-            page.goto(self.url, timeout=60000)
-            self.handle_captcha(page)
-            html = page.content()
-            self.using_bs4(html)
-            while True:
-                try:
-                    next_button = page.locator("div.next-page-btn")
-                    if next_button.is_visible() and not next_button.is_disabled():
-                        next_button.click()
-                        page.wait_for_timeout(2000)
-                        html = page.content()
-                        self.using_bs4(html)
-                    else:
-                        break
-                except Exception as e:
-                    print(f"Error while navigating pages: {e}")
-                    break
-            browser.close()
-
+        captcha_handler = CaptchaHandler(self.url)  # CaptchaHandler 인스턴스를 생성
+        captcha_handler.crawl_with_captcha(self.using_bs4)  # 크롤링 및 BS4 처리 호출
+  
     def process(self):
         self.crawl()
+        if self.browser:  # 크롤링 작업이 끝난 후 브라우저 종료
+            self.browser.close()
         return self.result
