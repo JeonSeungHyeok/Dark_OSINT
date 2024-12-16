@@ -2,6 +2,7 @@ from default.basic_tor import *
 from blackbasta.blackbasta import *
 from play.play import *
 from rhysida.rhysida import *
+from telegram.telegram import *
 from elastic import ELK
 import json
 import os
@@ -26,11 +27,12 @@ def reorder_dict(data):
 def make_output_file(name,result):
     current_path = os.getcwd()
     try:
-         os.mkdir("OUT")
+        os.mkdir("OUT")
     except FileExistsError as e:
-         pass
+        pass
     with open(f"{current_path}/OUT/{name}_result.json", "w") as json_file:
-            json.dump(reorder_dict(result), json_file, indent=4)
+        json.dump(reorder_dict(result), json_file, indent=4)
+    return json.dumps(reorder_dict(result), indent=4)
 
 def process():
     urls = {
@@ -53,8 +55,8 @@ def process():
             osint_class.page = tmp.page
             result, tmp.browser, tmp.page = osint_class.process()
         else:
-             result = osint_class.process()
-        make_output_file(key,result)
+            result = osint_class.process()
+        send_message(key, make_output_file(key,result))
     tmp.close_browser()
     
     #ELK().process()
