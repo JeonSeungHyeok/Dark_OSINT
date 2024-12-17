@@ -57,4 +57,4 @@ def process():
         make_output_file(key,result)
     tmp.close_browser()
     
-    #ELK().process()
+    ELK().process()
