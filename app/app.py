@@ -32,7 +32,7 @@ def make_output_file(name,result):
         pass
     with open(f"{current_path}/OUT/{name}_result.json", "w") as json_file:
         json.dump(reorder_dict(result), json_file, indent=4)
-    return json.dumps(reorder_dict(result), indent=4)
+    return reorder_dict(result)
 
 def process():
     urls = {
