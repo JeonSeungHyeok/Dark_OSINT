@@ -1,18 +1,37 @@
-from bs4 import BeautifulSoup
-from default.basic_tor import osint_tor_render_js
-from captcha import CaptchaHandler
-import time
+from default.basic_tor import *
+from .zoom import *
+from .medianblur import *
+from .openclose import *
+from .invertimage import *
 
 class osint_medusa(osint_tor_render_js):
-    def __init__(self, url):
+    def __init__(self, url=None):
         super().__init__(url)
         self.progress = True
-        self.result = {}
 
-    def using_bs4(self, html):
+    def re_captcha(self):
+        self.go_page()
+        print("go2")
+        try:
+            self.page.eval_on_selector("#captcha-reload", "element => element.style.display = 'none'")
+            captcha_div = self.page.locator("div.captcha-image-wrapper")
+            captcha_div.screenshot(path="./tmp.png")
+            print("captcha2")
+            median()
+            zoom()
+            temp()
+            captcha_text = image()
+            return captcha_text
+        
+        except Exception as e:
+            print(e)
+            return ""
+
+    def using_bs4(self):
+        html = self.page.content()
         bsobj = BeautifulSoup(html, 'html.parser')
         companies = bsobj.find_all("div", class_="card")
-        
+
         for company in companies:
             try:
                 title = company.find("h3", class_="card-title").get_text(strip=True)
@@ -30,7 +49,7 @@ class osint_medusa(osint_tor_render_js):
                 update_date = updated_tag.find("span", class_="text-muted").get_text(strip=True) if updated_tag else "No Update Date"
                 views_tag = company.find("div", class_="number-view")
                 views = views_tag.find("span", class_="text-muted").get_text(strip=True) if views_tag else "No Views"
-                
+
                 result = {
                     "title": title,
                     "description": description,
@@ -42,17 +61,43 @@ class osint_medusa(osint_tor_render_js):
                 self.result[title] = result
             except Exception as e:
                 print(f"Error extracting data: {e}")
-    
-    def crawl(self):
-        captcha_handler = CaptchaHandler(self.url)  # CaptchaHandler 인스턴스를 생성
-        captcha_handler.crawl_with_captcha(self.using_bs4)  # 크롤링 및 BS4 처리 호출
-  
-    def process(self):
-        self.go_page()
-        try:
-            self.next_page()
-        finally:
-            self.progress = False  # 종료 조건 설정
-            self.get_region_country()
-        return self.result, self.browser, self.page
 
+    def init_the_browser(self):
+        self.init_browser()
+
+    def captcha(self):
+        print("init")
+        self.go_page()
+        print("go")
+        try:
+            self.page.eval_on_selector("#captcha-reload", "element => element.style.display = 'none'")
+            captcha_div = self.page.locator("div.captcha-image-wrapper")
+            captcha_div.screenshot(path="./tmp.png")
+            print("captcha")
+            median()
+            zoom()
+            temp()
+            captcha_text = image().replace('\n','').replace(' ','')
+            print(len(captcha_text))
+            while len(captcha_text)!=7:
+                captcha_text = self.re_captcha().replace('\n','').replace(' ','')
+                print(captcha_text)
+                print(len(captcha_text))
+            self.page.fill('input[name="captcha"]', captcha_text)
+            self.page.click('button.captcha-card-button')
+            self.page.wait_for_load_state('networkidle', timeout=10000)  # 네트워크 요청이 없는 상태로 최대 10초 대기
+
+            # 리다이렉트된 페이지 URL 출력
+            redirected_url = self.page.url
+            print(f"Redirected to: {redirected_url}")
+
+            # 리다이렉트된 페이지의 내용 확인 (선택)
+            self.captcha()
+            
+        except Exception as e:
+            self.using_bs4()
+        print("close")
+
+    def process(self):
+        self.captcha()
+        return self.result, self.browser, self.page
