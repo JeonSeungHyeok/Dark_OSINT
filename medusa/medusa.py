@@ -1,4 +1,3 @@
-from playwright.sync_api import sync_playwright
 from bs4 import BeautifulSoup
 from default.basic_tor import osint_tor_render_js
 from captcha import CaptchaHandler
@@ -8,6 +7,7 @@ class osint_medusa(osint_tor_render_js):
     def __init__(self, url):
         super().__init__(url)
         self.progress = True
+        self.result = {}
 
     def using_bs4(self, html):
         bsobj = BeautifulSoup(html, 'html.parser')
@@ -48,7 +48,11 @@ class osint_medusa(osint_tor_render_js):
         captcha_handler.crawl_with_captcha(self.using_bs4)  # 크롤링 및 BS4 처리 호출
   
     def process(self):
-        self.crawl()
-        if self.browser:  # 크롤링 작업이 끝난 후 브라우저 종료
-            self.browser.close()
-        return self.result
+        self.go_page()
+        try:
+            self.next_page()
+        finally:
+            self.progress = False  # 종료 조건 설정
+            self.get_region_country()
+        return self.result, self.browser, self.page
+

@@ -2,6 +2,7 @@ from default.basic_tor import *
 from blackbasta.blackbasta import *
 from play.play import *
 from rhysida.rhysida import *
+from medusa.medusa import *
 from elastic import ELK
 import json
 import os
@@ -34,16 +35,18 @@ def make_output_file(name,result):
 
 def process():
     urls = {
-        "blackbasta":"http://stniiomyjliimcgkvdszvgen3eaaoz55hreqqx6o77yvmpwt7gklffqd.onion/",
-        "play": "http://mbrlkbtq5jonaqkurjwmxftytyn2ethqvbxfu4rgjbkkknndqwae6byd.onion/",
-        "rhysida":"http://rhysidafohrhyy2aszi7bm32tnjat5xri65fopcxkdfxhi4tidsg7cad.onion",
+        #"blackbasta":"http://stniiomyjliimcgkvdszvgen3eaaoz55hreqqx6o77yvmpwt7gklffqd.onion/",
+        #"play": "http://mbrlkbtq5jonaqkurjwmxftytyn2ethqvbxfu4rgjbkkknndqwae6byd.onion/",
+        #"rhysida":"http://rhysidafohrhyy2aszi7bm32tnjat5xri65fopcxkdfxhi4tidsg7cad.onion",
+        "medusa": "http://xfv4jzckytb4g3ckwemcny3ihv4i5p4lqzdpi624cxisu35my5fwi5qd.onion/",
     }
     classes = {
-        "blackbasta":osint_blackbasta,
-        "play":osint_play,
-        "rhysida":osint_rhysida,
+        #"blackbasta":osint_blackbasta,
+        #"play":osint_play,
+        #"rhysida":osint_rhysida,
+        "medusa":osint_medusa,
     }
-    js = ['blackbasta','play','rhysida']
+    js = ['blackbasta','play','rhysida','medusa']
     tmp = osint_tor_render_js()
     tmp.init_browser()
     for key,value in classes.items():
@@ -57,4 +60,4 @@ def process():
         make_output_file(key,result)
     tmp.close_browser()
     
-    ELK().process()
+    #ELK().process()
