@@ -1,31 +1,27 @@
-import sys, os
 from default.basic_tor import osint_tor_default
 from bs4 import BeautifulSoup
 import re
-from dns_resolver import resolve_ipv4
-import requests
 from urllib.parse import urljoin
-
-import socket
+from datetime import datetime, timedelta
 
 class osint_cactus(osint_tor_default):
     def __init__(self, url):
         super().__init__(url)
         self.totalResults = {}
-        self.baseUrl=url
+        self.baseUrl = url
 
     def request_default_url(self):
         try:
             response = self.session.get(self.url, verify=False)
             self.response = response
         except Exception as e:
-            print(f"Error at request_default_url : {e}")
+            print(f"Error at request_default_url: {e}")
             exit(1)
 
     def using_bs4(self):
         html = self.response.text
         bsobj = BeautifulSoup(html, 'html.parser')
-        results={}
+
         for h2 in bsobj.find_all('h2', class_='text-[16px] font-bold leading-6 text-white'):
             parts = re.split(r'\\', h2.text)
             if len(parts) >= 4:
@@ -42,36 +38,44 @@ class osint_cactus(osint_tor_default):
             href = parent_a['href']
             fullUrl = urljoin(self.baseUrl, href)
             print(f"Processing URL: {fullUrl}")
-            # 새로운 URL에서 세부 정보 가져오기
-            formattedDate, dataDescription, address, tel, site, images, comDescription = self.details(fullUrl)
 
-            allData=f'size({dataSize}) {dataDescription}'
+            # 세부 정보 가져오기
+            details = self.details(fullUrl)
+            if details[0] is None:
+                continue
+
+            formattedDate, dataDescription, address, tel, site, images, comDescription = details
+
+            # 3개월 이상 지난 데이터가 나오면 중단
+            date_obj = datetime.strptime(formattedDate, "%Y.%m.%d")
+            three_months_ago = datetime.now() - timedelta(days=90)
+            if date_obj < three_months_ago:
+                print(f"Stopping at old data: {formattedDate}")
+                return False  # 중단 신호 반환
+
+            allData = f'size({dataSize}) {dataDescription}'
 
             # 결과 딕셔너리에 저장
-            results = {
+            self.totalResults[title] = {
                 'title': title,
                 'Description': comDescription,
                 'site': site,
                 'address': address,
                 'country': country,
                 'tel': tel,
-                'images':images,
-                'updateDate': formattedDate,
+                'images': images,
+                'times': formattedDate,
                 'all data': allData
             }
-            self.totalResults[title]=results
-            self.get_region_country()
-            input('-')
-            self.test()
-            input('-')
 
-        return results
+        return True  # 계속 진행 신호 반환
 
-    def details(self,url):
+    def details(self, url):
         self.make_tor_session()
         response = self.session.get(url, verify=False)
         new_html = response.text
         newSoup = BeautifulSoup(new_html, 'html.parser')
+
         # 날짜 추출 및 포맷 변경
         formattedDate = None
         dataDescription = None
@@ -82,7 +86,7 @@ class osint_cactus(osint_tor_default):
             if update_date_match:
                 date_str = update_date_match.group(1)
                 day, month, year = date_str.split('.')
-                formattedDate = f"{year}{month}{day}"
+                formattedDate = f"{year}.{month}.{day}"
 
         # DATA DESCRIPTIONS 추출
         dataDescriptionElement = newSoup.find('mark', string='DATA DESCRIPTIONS:')
@@ -91,22 +95,19 @@ class osint_cactus(osint_tor_default):
 
         # Address 추출
         address = None
-        tel = None
         addressElement = newSoup.find(string=re.compile(r'Address:'))
         if addressElement:
-            address_text = addressElement.strip()
-            # Address:와 Phone Number: 사이 텍스트 추출
-            match_address = re.search(r'Address:(.*?)Phone Number:', address_text, re.DOTALL)
-            if match_address:
-                address = match_address.group(1).strip()
+            address_match = re.search(r'Address:\s*(.*)', addressElement)
+            if address_match:
+                address = address_match.group(1).strip()
 
         # Phone Number 추출
+        tel = None
         telElement = newSoup.find(string=re.compile(r'Phone Number:'))
         if telElement:
-            tel_text = telElement.strip()
-            match_tel = re.search(r'Phone Number:(.*)', tel_text, re.DOTALL)
-            if match_tel:
-                tel = match_tel.group(1).strip()
+            tel_match = re.search(r'Phone Number:\s*(.*)', telElement)
+            if tel_match:
+                tel = tel_match.group(1).strip()
 
         # Website URL 추출
         websiteElement = newSoup.find('a', href=True, string=re.compile(r'https://'))
@@ -116,56 +117,25 @@ class osint_cactus(osint_tor_default):
         imageElements = newSoup.find_all('img')
         images = [urljoin(self.baseUrl, img['src']) for img in imageElements if 'src' in img.attrs]
 
+        # Company Description 추출
         markerElement = newSoup.find('mark', class_='marker-yellow')
         comDescription = None
-
         if markerElement:
-            # 마커 다음에 나오는 첫 번째 <p> 태그 찾기
             nextP = markerElement.find_next('p')
             if nextP:
                 comDescription = nextP.text.strip()
 
         return formattedDate, dataDescription, address, tel, site, images, comDescription
 
-    def get_region_country(self):
-        try:
-            for key, values in self.totalResults.items():
-                if not values.get("site"):
-                    continue
-                ip = resolve_ipv4(values["site"])
-                if ip and len(ip) > 0:
-                    response = requests.get(f"http://ip-api.com/json/{ip[0]}").json()
-                    values.update({"country":response["country"]})
-                    values.update({"region":f"{response['city']}, {response['regionName']}, {response['country']}"})
-                else:
-                    print(f"No IP addresses found for {values['site']}")
-        except Exception as e:
-            print(f"Error at get_region_country : {e}")
-
-    def test(self):
-
-        try:
-            ip = socket.gethostbyname("www.ottosimon.co.uk")
-            print(ip)
-        except Exception as e:
-            print(f"Error resolving host: {e}")
-
-
     def process(self):
         super().process()
-        for i in [1]:
-            self.url=self.baseUrl+f'?page={i}'
+        page = 1
+        while True:
+            self.url = self.baseUrl + f'?page={page}'
             self.request_default_url()
-            self.using_bs4()
+            should_continue = self.using_bs4()
+            if not should_continue:
+                break
+            page += 1
 
         return self.totalResults
-
-
-def main():
-    url = "https://cactusbloguuodvqjmnzlwetjlpj6aggc6iocwhuupb47laukux7ckid.onion/"
-    cactus = osint_cactus(url)
-    cactus.process()
-
-
-if __name__ == "__main__":
-    main()

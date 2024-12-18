@@ -101,10 +101,4 @@ class osint_blackbasta(osint_tor_render_js):
         self.go_page()
         self.next_page()
         self.get_region_country()
-<<<<<<< HEAD:default/blackbasta/blackbasta.py
-        super().close_browser()
-        print(self.result)
-        return self.result
-=======
         return self.result, self.browser, self.page
->>>>>>> origin/won6c:app/blackbasta/blackbasta.py

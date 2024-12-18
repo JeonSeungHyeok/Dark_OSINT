@@ -2,6 +2,7 @@ from default.basic_tor import *
 from blackbasta.blackbasta import *
 from play.play import *
 from rhysida.rhysida import *
+from cactus.cactus import *
 from elastic import ELK
 import json
 import os
@@ -34,14 +35,16 @@ def make_output_file(name,result):
 
 def process():
     urls = {
-        "blackbasta":"http://stniiomyjliimcgkvdszvgen3eaaoz55hreqqx6o77yvmpwt7gklffqd.onion/",
-        "play": "http://mbrlkbtq5jonaqkurjwmxftytyn2ethqvbxfu4rgjbkkknndqwae6byd.onion/",
-        "rhysida":"http://rhysidafohrhyy2aszi7bm32tnjat5xri65fopcxkdfxhi4tidsg7cad.onion",
+        #"blackbasta":"http://stniiomyjliimcgkvdszvgen3eaaoz55hreqqx6o77yvmpwt7gklffqd.onion/",
+        #"play": "http://mbrlkbtq5jonaqkurjwmxftytyn2ethqvbxfu4rgjbkkknndqwae6byd.onion/",
+        #"rhysida":"http://rhysidafohrhyy2aszi7bm32tnjat5xri65fopcxkdfxhi4tidsg7cad.onion",
+        "cactus":"https://cactusbloguuodvqjmnzlwetjlpj6aggc6iocwhuupb47laukux7ckid.onion/",
     }
     classes = {
-        "blackbasta":osint_blackbasta,
-        "play":osint_play,
-        "rhysida":osint_rhysida,
+        #"blackbasta":osint_blackbasta,
+        #"play":osint_play,
+        #"rhysida":osint_rhysida,
+        "cactus":osint_cactus,
     }
     js = ['blackbasta','play','rhysida']
     tmp = osint_tor_render_js()
