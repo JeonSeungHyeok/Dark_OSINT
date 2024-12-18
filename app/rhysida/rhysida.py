@@ -1,6 +1,7 @@
 from default.basic_tor import osint_tor_render_js
 from bs4 import BeautifulSoup
-import time
+from dns_resolver import resolve_ipv4
+import requests
 
 class osint_rhysida(osint_tor_render_js):
     def __init__(self, url):
@@ -36,8 +37,19 @@ class osint_rhysida(osint_tor_render_js):
             }
             self.result[title] = result
 
+    def get_region_country(self):
+        try:
+            for key, values in self.result.items():
+                ip = resolve_ipv4(values["site"])
+                response = requests.get(f"http://ip-api.com/json/{ip[0]}").json()
+                values.update({"country":response["country"]})
+                values.update({"region":f"{response['city']}, {response['regionName']}, {response['country']}"})
+        except Exception as e:
+            print(f"Error at get_region_country : {e}")
+
     def process(self):
         self.go_page()
         self.tor_playwright_crawl()
         self.using_bs4()
+        self.get_region_country()
         return self.result, self.browser, self.page

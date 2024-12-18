@@ -1,8 +1,10 @@
 from default.basic_tor import osint_tor_render_js
 from bs4 import BeautifulSoup
+from dns_resolver import resolve_ipv4
 import time
 import re
 from requests import *
+import requests
 
 class osint_play(osint_tor_render_js):
     def __init__(self, url):
@@ -101,6 +103,16 @@ class osint_play(osint_tor_render_js):
         for char in ['#', ':', '.']:
             key = key.replace(char, '').lower()
         return key.lower()
+    
+    def get_region_country(self):
+        try:
+            for key, values in self.result.items():
+                ip = resolve_ipv4(values["site"])
+                response = requests.get(f"http://ip-api.com/json/{ip[0]}").json()
+                values.update({"country":response["country"]})
+                values.update({"region":f"{response['city']}, {response['regionName']}, {response['country']}"})
+        except Exception as e:
+            print(f"Error at get_region_country : {e}")
 
     def process(self):
         self.go_page()
@@ -108,4 +120,5 @@ class osint_play(osint_tor_render_js):
             self.next_page()
         finally:
             self.progress = False  # 종료 조건 설정
+            self.get_region_country()
         return self.result, self.browser, self.page
