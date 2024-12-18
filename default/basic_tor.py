@@ -4,6 +4,7 @@ from requests_tor import RequestsTor
 from requests.models import Response
 from tldextract import extract
 from bs4 import BeautifulSoup
+import time
 
 class osint_tor_default:
     def __init__(self,url):
@@ -99,7 +100,7 @@ class osint_tor_default:
         self.using_bs4()
         
 class osint_tor_render_js:
-    def __init__(self,url):
+    def __init__(self,url=None):
         self.url=url
         self.response = None
         self.result = {}
@@ -112,12 +113,15 @@ class osint_tor_render_js:
             proxy={"server": "socks5://127.0.0.1:9050"}
         )
         self.page = self.browser.new_page()
+
+    def go_page(self):
         self.page.goto(self.url, timeout=60000) 
         self.page.wait_for_timeout(5000)
 
     def close_browser(self):
         if self.browser:
             self.browser.close()
+            time.sleep(10)
 
     def tor_playwright_crawl(self):
         try:
@@ -131,5 +135,16 @@ class osint_tor_render_js:
         except Exception as e:
             print(f"Error: {e}")
 
+    def parse_domain(self):
+        try:
+            extracted = extract(self.url)
+            return extracted.domain+"."+extracted.suffix
+        except Exception as e:
+            print(f"Error at parse_domain : {e}")
+            exit(1)
+        return None
+
     def process(self):
         self.tor_playwright_crawl()
+
+                
