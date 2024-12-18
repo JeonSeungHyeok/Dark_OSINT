@@ -1,11 +1,14 @@
-from collections import OrderedDict
 from default.basic_tor import *
+from blackbasta.blackbasta import *
+from play.play import *
+from rhysida.rhysida import *
 from bianlian.bianlian import *
+from elastic import ELK
 import json
 import os
 
 def reorder_dict(data):
-    desired_order = ["title", "Description", "site", "address", "country", "region", "data_info", "tel", "link", "images", "times", "timer", "price"]
+    desired_order = ["title", "Description", "site", "address", "country", "region", "all data", "tel", "link", "images", "times", "timer", "price"]
     reordered = {}
     for key, value in data.items():
         if isinstance(value, dict):
@@ -21,22 +24,40 @@ def reorder_dict(data):
                    
     return reordered
 
-def make_output_file(name, result):
+def make_output_file(name,result):
     current_path = os.getcwd()
     try:
-        os.mkdir("OUT")
-    except FileExistsError:
-        pass
+         os.mkdir("OUT")
+    except FileExistsError as e:
+         pass
     with open(f"{current_path}/OUT/{name}_result.json", "w") as json_file:
-        json.dump(reorder_dict(result), json_file, indent=4,ensure_ascii=False)
+            json.dump(reorder_dict(result), json_file, indent=4,ensure_ascii=False)
 
 def process():
     urls = {
-        "bianlian": "http://bianlianlbc5an4kgnay3opdemgcryg2kpfcbgczopmm3dnbz3uaunad.onion/"
+        "blackbasta":"http://stniiomyjliimcgkvdszvgen3eaaoz55hreqqx6o77yvmpwt7gklffqd.onion/",
+        "play": "http://mbrlkbtq5jonaqkurjwmxftytyn2ethqvbxfu4rgjbkkknndqwae6byd.onion/",
+        "rhysida":"http://rhysidafohrhyy2aszi7bm32tnjat5xri65fopcxkdfxhi4tidsg7cad.onion",
+        "bianlian": "http://bianlianlbc5an4kgnay3opdemgcryg2kpfcbgczopmm3dnbz3uaunad.onion/",
     }
     classes = {
+        "blackbasta":osint_blackbasta,
+        "play":osint_play,
+        "rhysida":osint_rhysida,
         "bianlian": osint_bianlian,
     }
-
-    for key, value in classes.items():
-        make_output_file(key, value(urls[key]).process())
+    js = ['blackbasta','play','rhysida', 'bianlian']
+    tmp = osint_tor_render_js()
+    tmp.init_browser()
+    for key,value in classes.items():
+        osint_class = value(urls[key])
+        if key in js:
+            osint_class.browser = tmp.browser
+            osint_class.page = tmp.page
+            result, tmp.browser, tmp.page = osint_class.process()
+        else:
+             result = osint_class.process()
+        make_output_file(key,result)
+    tmp.close_browser()
+    
+    ELK().process()
