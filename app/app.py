@@ -2,6 +2,7 @@ from default.basic_tor import *
 from blackbasta.blackbasta import *
 from play.play import *
 from rhysida.rhysida import *
+from bianlian.bianlian import *
 from elastic import ELK
 import json
 import os
@@ -37,13 +38,15 @@ def process():
         "blackbasta":"http://stniiomyjliimcgkvdszvgen3eaaoz55hreqqx6o77yvmpwt7gklffqd.onion/",
         "play": "http://mbrlkbtq5jonaqkurjwmxftytyn2ethqvbxfu4rgjbkkknndqwae6byd.onion/",
         "rhysida":"http://rhysidafohrhyy2aszi7bm32tnjat5xri65fopcxkdfxhi4tidsg7cad.onion",
+        "bianlian": "http://bianlianlbc5an4kgnay3opdemgcryg2kpfcbgczopmm3dnbz3uaunad.onion/",
     }
     classes = {
         "blackbasta":osint_blackbasta,
         "play":osint_play,
         "rhysida":osint_rhysida,
+        "bianlian": osint_bianlian,
     }
-    js = ['blackbasta','play','rhysida']
+    js = ['blackbasta','play','rhysida', 'bianlian']
     tmp = osint_tor_render_js()
     tmp.init_browser()
     for key,value in classes.items():
