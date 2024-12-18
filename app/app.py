@@ -3,6 +3,7 @@ from blackbasta.blackbasta import *
 from play.play import *
 from rhysida.rhysida import *
 from bianlian.bianlian import *
+from medusa.medusa import *
 from elastic import ELK
 import json
 import os
@@ -39,12 +40,14 @@ def process():
         "play": "http://mbrlkbtq5jonaqkurjwmxftytyn2ethqvbxfu4rgjbkkknndqwae6byd.onion/",
         "rhysida":"http://rhysidafohrhyy2aszi7bm32tnjat5xri65fopcxkdfxhi4tidsg7cad.onion",
         "bianlian": "http://bianlianlbc5an4kgnay3opdemgcryg2kpfcbgczopmm3dnbz3uaunad.onion/",
+        "medusa": "http://xfv4jzckytb4g3ckwemcny3ihv4i5p4lqzdpi624cxisu35my5fwi5qd.onion/",
     }
     classes = {
         "blackbasta":osint_blackbasta,
         "play":osint_play,
         "rhysida":osint_rhysida,
         "bianlian": osint_bianlian,
+        "medusa":osint_medusa,
     }
     js = ['blackbasta','play','rhysida', 'bianlian']
     tmp = osint_tor_render_js()
