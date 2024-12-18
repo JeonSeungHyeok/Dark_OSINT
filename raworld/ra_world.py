@@ -1,26 +1,30 @@
-from default.basic_tor import osint_tor_default
+from default.basic_tor import osint_tor_render_js
 from bs4 import BeautifulSoup
 import re
-import chardet
+from requests import *
+from urllib.parse import urljoin, quote
 
-class osint_rawolrd(osint_tor_default):
+class osint_rawolrd(osint_tor_render_js):
     def __init__(self, url):
         super().__init__(url)
         self.base_url = url.rstrip("/")  # URL 마지막 슬래시 제거
         self.progress = True
         self.result = {}
-        
-    def request_default_url(self):
+
+    def tor_playwright_crawl(self):
         try:
-            response = self.session.get(self.url, verify=False)
-            # 자동으로 인코딩 감지
-            result = chardet.detect(response.content)
-            encoding = result['encoding']
-            response.encoding = encoding  # 인코딩을 감지된 값으로 설정
+            self.page.goto(self.url, timeout=60000) 
+            self.page.wait_for_timeout(5000)
+            html = self.page.content()
+            response = Response()
+            response._content = html.encode('utf-8') 
+            response.status_code = 200 
+            response.url = self.url 
+            response.headers = {"Content-Type": "text/html; charset=utf-8"} 
+            response.encoding = 'utf-8' # 인코딩
             self.response = response
         except Exception as e:
-            print(f"Error at request_default_url : {e}")
-            exit(1)
+            print(f"Error: {e}")
             
     def using_bs4(self):
         html = self.response.text
@@ -30,60 +34,68 @@ class osint_rawolrd(osint_tor_default):
         
         for item in portfolio_items:
           link = item.find('a')
+          time = "N/A"
           if link:
             title = link.text.strip()
             href = link['href'].strip()
-            full_url = self.base_url + href
             
-          time_element = item.find("div", class_="portfolio_content")
-          time = time_element.text.strip() if time_element else 'none'
-          
-          site, content = self.details(full_url)
+            combined_url = urljoin(self.base_url, href)
+            full_url = quote(combined_url, safe=":/")
+            self.url = full_url
+          else:
+            # a 태그가 없는 경우만 처리 (날짜만 포함된 div)
+            time = item.text.strip() 
+
+          site, content = self.details()
           
           result = {
             "title": title,
             "link": full_url,
-            #"times": time,
+            "times": time,
             "site": site,
             "all data": content
           }
           self.result[title]=result
-          #print(result)
           
-    def details(self,url):
-      self.make_tor_session()
-      response = self.session.get(url, verify=False)
-      # 자동으로 인코딩 감지
-      result = chardet.detect(response.content)
-      encoding = result['encoding']
-      response.encoding = encoding  # 인코딩을 감지된 값으로 설정
-      new_html = response.text
+    def details(self):
+      self.tor_playwright_crawl()
+      new_html = self.response.text
       newSoup = BeautifulSoup(new_html, 'html.parser')
       site, content = None, None
       
-      site_element = newSoup.find('a', href=True, string=re.compile(r'https://'))
-      site = site_element['href'] if site_element else 'none'
+      site_elements = newSoup.find_all("div", class_="black-background")
+      for site_element in site_elements:
+            if site_element.find('a'):
+                try:
+                    site = site_element.find('a')['href']
+                    break
+                except Exception as e:
+                    pass
 
       content_element = newSoup.find('h5', text="Content:")
       if content_element:
           next_div = content_element.find_next('div', class_='black-background') 
           if next_div:
-              content = ', '.join(sorted([item.strip() for item in next_div.decode_contents().splitlines() if item.strip()]))
+              content = ', '.join(sorted([item.strip() for item in next_div.get_text().splitlines() if item.strip()]))
           else:
               content = 'none'
       else:
           content = 'none'
+    
+      # 유니코드 이스케이프 처리
+      if content != 'none':
+          content = bytes(content, 'utf-8').decode('unicode-escape')
 
       return site, content
     
     def remove_char(self, key):
         for char in ['#', ':', '.']:
-            key = key.replace(char, '').lower()
+            key = key.replace(char, '')
         return key.lower()
 
     def process(self):
-        super().process()
-        #self.url=self.base_url
-        #self.request_default_url()
-        #self.using_bs4()
+        super().init_browser()
+        self.tor_playwright_crawl()
+        self.using_bs4()
+        super().close_browser()
         return self.result
