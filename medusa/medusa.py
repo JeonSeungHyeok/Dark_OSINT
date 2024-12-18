@@ -2,6 +2,7 @@ from playwright.sync_api import sync_playwright
 from bs4 import BeautifulSoup
 from default.basic_tor import osint_tor_render_js
 from captcha import CaptchaHandler
+import time
 
 class osint_medusa(osint_tor_render_js):
     def __init__(self, url):
