@@ -5,6 +5,7 @@ def main():
     process()
 
 if __name__=="__main__":
-    #while True:
+    hours = int(input('몇시간마다 수집할 것인가요?: '))
+    while True:
         main()
-        #time.sleep(43200) # every 12 hours
+        time.sleep(hours*60*60)
