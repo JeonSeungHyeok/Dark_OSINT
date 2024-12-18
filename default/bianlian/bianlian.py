@@ -29,7 +29,7 @@ class osint_bianlian(osint_tor_render_js):
         site_tag = soup.find("a", href=True, string=lambda s: s and s.startswith("http"))
         site = site_tag["href"] if site_tag else "No Site"
 
-        # 데이터 정보 추출 (all data)
+        # 데이터 정보 추출
         all_data = []
         all_data_element = soup.find("strong", string=lambda text: text and "Data description" in text)
         if all_data_element:
@@ -82,7 +82,7 @@ class osint_bianlian(osint_tor_render_js):
                     except Exception as e:
                         print(f"[ERROR] Failed to process link {link}: {e}")
 
-            # 결과 저장 (title을 명시적으로 추가)
+            # 결과 저장 
             self.result[title] = {
                 "title": title,
                 "link": link,
@@ -104,7 +104,7 @@ class osint_bianlian(osint_tor_render_js):
 
     def process(self):
         """브라우저를 초기화하고 데이터를 수집합니다."""
-        self.go_page()  # 브라우저 초기화
+        self.go_page()
         try:
             self.tor_playwright_crawl()  # Tor 크롤링 실행
             self.using_bs4()  # 데이터 처리
