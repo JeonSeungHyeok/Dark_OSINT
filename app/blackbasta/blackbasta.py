@@ -44,6 +44,7 @@ class osint_blackbasta(osint_tor_render_js):
                     pass
                 img = p.find_all('img')
                 img_links = [self.url+x.get('src') for x in img]
+                timer = card.find('div', class_='timer_container').string
                 if "all data size" in key:
                     pattern = r"all data size\s*(.*)" 
                     match = re.search(pattern, key) 
@@ -58,6 +59,7 @@ class osint_blackbasta(osint_tor_render_js):
                 result.pop("N/A",None)
             result.update({"title":title})
             result.update({"link":link})
+            result.update({"timer":timer})
             self.result.update({result["title"]:result})
 
     def next_page(self):
