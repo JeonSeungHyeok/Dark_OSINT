@@ -49,7 +49,7 @@ def process():
         "bianlian": osint_bianlian,
         "medusa":osint_medusa,
     }
-    js = ['blackbasta','play','rhysida', 'bianlian']
+    js = ['blackbasta','play','rhysida', 'bianlian', 'medusa']
     tmp = osint_tor_render_js()
     tmp.init_browser()
     for key,value in classes.items():
