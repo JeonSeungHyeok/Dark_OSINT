@@ -106,9 +106,11 @@ class osint_tor_render_js:
         self.result = {}
         self.browser=None
         self.page=None
+        self.playwright=None
 
     def init_browser(self):
-        self.browser = sync_playwright().start().firefox.launch(
+        self.playwright = sync_playwright().start()
+        self.browser = self.playwright.firefox.launch(
             headless=True,
             proxy={"server": "socks5://127.0.0.1:9050"}
         )
@@ -121,7 +123,9 @@ class osint_tor_render_js:
     def close_browser(self):
         if self.browser:
             self.browser.close()
-            time.sleep(10)
+        if self.playwright:
+            self.playwright.stop()
+        time.sleep(10)
 
     def tor_playwright_crawl(self):
         try:
