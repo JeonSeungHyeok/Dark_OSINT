@@ -16,7 +16,7 @@ def zoom_image(input_image_path, output_image_path, zoom_factor=5):
         print(e)
 
 def zoom():
-    input_image = "./mediantest.png"  
-    output_image = "./zoomed_image.png" 
+    input_image = "/app/images/mediantest.png"  
+    output_image = "/app/images/zoomed_image.png" 
     zoom_image(input_image, output_image, zoom_factor=5)
 

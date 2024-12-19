@@ -115,8 +115,8 @@ class osint_tor_render_js:
         self.page = self.browser.new_page()
 
     def go_page(self):
-        self.page.goto(self.url, timeout=60000) 
-        self.page.wait_for_timeout(5000)
+        self.page.goto(self.url, timeout=180000) 
+        self.page.wait_for_timeout(6000)
 
     def close_browser(self):
         if self.browser:

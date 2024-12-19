@@ -16,6 +16,16 @@ COPY ./app/ /app/
 
 WORKDIR /app/
 
+ARG DEBIAN_FRONTEND=noninteractive
+RUN apt-get install -y tzdata
+ENV TZ=America/New_York
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
+RUN apt-get install -y cron
+RUN echo "0 9,21 * * * python3 /app/main.py >> /var/log/cron.log 2>&1" > /etc/cron.d/tor_py
+RUN chmod 0644 /etc/cron.d/tor_py
+RUN crontab /etc/cron.d/tor_py
+
 RUN pip install opencv-python
 RUN pip3 install -r /app/requirements.txt
 
@@ -27,4 +37,4 @@ RUN playwright install-deps
 
 EXPOSE 9050 9051
 
-CMD service tor start && tail -F /var/log/mysql/error.log && ["bash"]
+CMD service tor start && cron && tail -F /var/log/mysql/error.log && ["bash"]

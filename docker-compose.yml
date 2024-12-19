@@ -34,10 +34,10 @@ services:
 
   tor:
     build:
-      context: .  # Dockerfile의 위치 (현재 폴더 기준)
+      context: .  
     container_name: tor
     networks:
-      - elastic  # ELK와 동일한 네트워크 사용
+      - elastic  
     depends_on:
       - elasticsearch
       - kibana
