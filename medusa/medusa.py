@@ -37,18 +37,18 @@ class osint_medusa(osint_tor_render_js):
                 title = company.find("h3", class_="card-title").get_text(strip=True)
                 description = company.find("div", class_="card-body").find("p").get_text(strip=True)
                 price_tag = company.find("div", class_="product__price-tag price-tag-warning")
-                price = price_tag.find("p", class_="product__price-tag-price").get_text(strip=True) if price_tag else "No Price"
+                price = price_tag.find("p", class_="product__price-tag-price").get_text(strip=True) if price_tag else "N/A"
                 countdown = company.find("ul", id="counter-list")
                 if countdown:
                     time_elements = countdown.find_all("span")
                     time_units = ["D", "H", "M", "S"]
                     timer = " ".join(f"{elem.get_text(strip=True)}{unit}" for elem, unit in zip(time_elements, time_units))
                 else:
-                    timer = "No Time"
+                    timer = "N/A"
                 updated_tag = company.find("div", class_="date-updated")
-                update_date = updated_tag.find("span", class_="text-muted").get_text(strip=True) if updated_tag else "No Update Date"
+                update_date = updated_tag.find("span", class_="text-muted").get_text(strip=True) if updated_tag else "N/A"
                 views_tag = company.find("div", class_="number-view")
-                views = views_tag.find("span", class_="text-muted").get_text(strip=True) if views_tag else "No Views"
+                views = views_tag.find("span", class_="text-muted").get_text(strip=True) if views_tag else "N/A"
 
                 result = {
                     "title": title,
