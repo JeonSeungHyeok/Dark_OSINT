@@ -22,35 +22,35 @@ class osint_bianlian(osint_tor_render_js):
         tel_elements = soup.find_all("div", class_="highlight")
         for element in tel_elements:
             for line in element.get_text(separator="\n", strip=True).split("\n"):
-                if "Phone" in line or "Cell" in line:  # 'Phone' 또는 'Cell'이 포함된 라인만 추출
+                if "Phone" in line or "Cell" in line or line.startswith("+"):
                     tel.append(line.strip())
 
         # 회사 사이트 추출
         site_tag = soup.find("a", href=True, string=lambda s: s and s.startswith("http"))
-        site = site_tag["href"] if site_tag else "N/A"
+        site = site_tag["href"] if site_tag else "No Site"
 
-        # 데이터 정보 추출 (data_info)
-        data_info = []
-        data_info_element = soup.select_one("strong:-soup-contains('Data description')")
-        if data_info_element:
-            ul = data_info_element.find_next("ul")
+        # 데이터 정보 추출
+        all_data = []
+        all_data_element = soup.find("strong", string=lambda text: text and "Data description" in text)
+        if all_data_element:
+            ul = all_data_element.find_next("ul")
             if ul:
-                data_info = [li.text.strip() for li in ul.find_all("li")]
+                all_data = [li.text.strip() for li in ul.find_all("li")]
         else:
             ul_elements = soup.find_all("ul")
             for ul in ul_elements:
                 if ul.find_previous("strong", text=lambda t: "Data description" in t):
-                    data_info = [li.text.strip() for li in ul.find_all("li")]
+                    all_data = [li.text.strip() for li in ul.find_all("li")]
                     break
 
-        if not data_info:
-            data_info = ["No Data Info"]
+        if not all_data:
+            all_data = ["No All Data"]
 
         return {
-            "description": description,
+            "Description": description,
             "tel": tel,
             "site": site,
-            "data_info": data_info
+            "all data": all_data
         }
 
     def using_bs4(self):
@@ -63,12 +63,12 @@ class osint_bianlian(osint_tor_render_js):
             # 제목과 링크
             title_tag = section.find("h1", class_="title")
             title_link = title_tag.find("a") if title_tag else None
-            title = title_link.text.strip() if title_link else "N/A"
-            link = f"{self.base_url}{title_link['href']}" if title_link else "N/A"
+            title = title_link.text.strip() if title_link else "No Title"
+            link = f"{self.base_url}{title_link['href']}" if title_link else "No URL"
 
             # 설명 추출
             description_tag = section.find("div", class_="description")
-            description = description_tag.text.strip() if description_tag else "N/A"
+            description = description_tag.text.strip() if description_tag else "No Description"
 
             # readmore 페이지 데이터 가져오기
             readmore_data = {}
@@ -79,17 +79,17 @@ class osint_bianlian(osint_tor_render_js):
                         detail_html = self.page.content()
                         readmore_data = self.extract_readmore_data(detail_html)
                         break
-                    except Exception:
-                        pass
+                    except Exception as e:
+                        print(f"[ERROR] Failed to process link {link}: {e}")
 
-            # 결과 저장 (title을 명시적으로 추가)
+            # 결과 저장 
             self.result[title] = {
                 "title": title,
                 "link": link,
-                "Description": readmore_data.get("description", description),
-                "site": readmore_data.get("site", "N/A"),
+                "Description": readmore_data.get("Description", description),
+                "site": readmore_data.get("site", "No Site"),
                 "tel": readmore_data.get("tel", []),
-                "data_info": readmore_data.get("data_info", [])
+                "all data": readmore_data.get("all data", [])
             }
 
     def get_region_country(self):
@@ -97,14 +97,14 @@ class osint_bianlian(osint_tor_render_js):
             for key, values in self.result.items():
                 ip = resolve_ipv4(values["site"])
                 response = requests.get(f"http://ip-api.com/json/{ip[0]}").json()
-                values.update({"country":response["country"]})
-                values.update({"region":f"{response['city']}, {response['regionName']}, {response['country']}"})
+                values.update({"country": response.get("country", "N/A")})
+                values.update({"region": f"{response.get('city', 'N/A')}, {response.get('regionName', 'N/A')}, {response.get('country', 'N/A')}"})
         except Exception as e:
             print(f"Error at get_region_country : {e}")
 
     def process(self):
         """브라우저를 초기화하고 데이터를 수집합니다."""
-        self.go_page()  # 브라우저 초기화
+        self.go_page()
         try:
             self.tor_playwright_crawl()  # Tor 크롤링 실행
             self.using_bs4()  # 데이터 처리
