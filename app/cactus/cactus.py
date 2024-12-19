@@ -48,7 +48,7 @@ class osint_cactus(osint_tor_default):
 
             # 3개월 이상 지난 데이터가 나오면 중단
             date_obj = datetime.strptime(formattedDate, "%Y.%m.%d")
-            three_months_ago = datetime.now() - timedelta(days=90)
+            three_months_ago = datetime.now() - timedelta(days=45)
             if date_obj < three_months_ago:
                 print(f"Stopping at old data: {formattedDate}")
                 return False  # 중단 신호 반환
