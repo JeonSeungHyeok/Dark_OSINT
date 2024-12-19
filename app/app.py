@@ -32,8 +32,10 @@ def make_output_file(name,result):
         os.mkdir("OUT")
     except FileExistsError as e:
         pass
-    with open(f"{current_path}/OUT/{name}_result.json", "w") as json_file:
+    file_path = f"{current_path}/OUT/{name}_result.json"
+    with open(file_path, "w") as json_file:
         json.dump(reorder_dict(result), json_file, indent=4)
+    send_file_telegram(file_path)
     return reorder_dict(result)
 
 def process():
