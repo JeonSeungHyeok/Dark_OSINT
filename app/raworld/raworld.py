@@ -45,15 +45,18 @@ class osint_raworld(osint_tor_render_js):
           else:
             # a 태그가 없는 경우만 처리 (날짜만 포함된 div)
             time = item.text.strip() 
-
-          site, content = self.details()
+          try:
+            site, content = self.details()
+          except Exception as e:
+            print(e)
+            pass
           
           result = {
             "title": title,
             "link": full_url,
             "times": time,
-            "site": site,
-            "all data": content
+            "site": site if site else "N/A",
+            "all data": content if content else "N/A"
           }
           self.result[title]=result
           
@@ -95,6 +98,10 @@ class osint_raworld(osint_tor_render_js):
 
     def process(self):
         self.go_page()
-        self.tor_playwright_crawl()
-        self.using_bs4()
+        try:
+            self.tor_playwright_crawl()
+            self.using_bs4()
+        except Exception as e:
+            print(e)
+            pass
         return self.result, self.browser, self.page

@@ -27,7 +27,7 @@ class osint_bianlian(osint_tor_render_js):
 
         # 회사 사이트 추출
         site_tag = soup.find("a", href=True, string=lambda s: s and s.startswith("http"))
-        site = site_tag["href"] if site_tag else "No Site"
+        site = site_tag["href"] if site_tag else "N/A"
 
         # 데이터 정보 추출
         all_data = []
@@ -63,16 +63,16 @@ class osint_bianlian(osint_tor_render_js):
             # 제목과 링크
             title_tag = section.find("h1", class_="title")
             title_link = title_tag.find("a") if title_tag else None
-            title = title_link.text.strip() if title_link else "No Title"
-            link = f"{self.base_url}{title_link['href']}" if title_link else "No URL"
+            title = title_link.text.strip() if title_link else "N/A"
+            link = f"{self.base_url}{title_link['href']}" if title_link else "N/A"
 
             # 설명 추출
             description_tag = section.find("div", class_="description")
-            description = description_tag.text.strip() if description_tag else "No Description"
+            description = description_tag.text.strip() if description_tag else "N/A"
 
             # readmore 페이지 데이터 가져오기
             readmore_data = {}
-            if link != "No URL":
+            if link != "N/A":
                 for _ in range(2):  # 최대 2번 재시도
                     try:
                         self.page.goto(link, timeout=60000, wait_until="domcontentloaded")
@@ -87,7 +87,7 @@ class osint_bianlian(osint_tor_render_js):
                 "title": title,
                 "link": link,
                 "Description": readmore_data.get("Description", description),
-                "site": readmore_data.get("site", "No Site"),
+                "site": readmore_data.get("site", "N/A"),
                 "tel": readmore_data.get("tel", []),
                 "all data": readmore_data.get("all data", [])
             }

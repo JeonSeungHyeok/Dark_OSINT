@@ -93,5 +93,12 @@ class osint_medusa(osint_tor_render_js):
             self.using_bs4()
 
     def process(self):
-        self.captcha()
+        while True:
+            try:
+                self.captcha()
+                break
+            except Exception as e:
+                print(e)
+                pass
+
         return self.result, self.browser, self.page
